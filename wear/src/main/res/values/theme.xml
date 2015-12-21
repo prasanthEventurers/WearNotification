@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Apptheme" parent="android:Theme.DeviceDefault.Light">
+        <item name="android:windowEnterAnimation">@anim/generic_confirmation_icon_animation</item>
+        <item name="android:windowSwipeToDismiss">false</item>
+    </style>
+</resources>

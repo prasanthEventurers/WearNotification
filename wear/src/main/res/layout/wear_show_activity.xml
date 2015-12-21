@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<android.support.wearable.view.WatchViewStub-->
+<!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--android:id="@+id/watch_view_stub"-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="match_parent"-->
+<!--app:rectLayout="@layout/rect_show_activity"-->
+<!--app:roundLayout="@layout/round_show_activity">-->
+
+<!--</android.support.wearable.view.WatchViewStub>-->
+<android.support.wearable.view.BoxInsetLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+<!--** Default Frame-->
+    <FrameLayout
+        android:id="@+id/frame_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_box="all"
+        android:padding="5dp">
+
+<!--**  Wearable List Item  -->
+        <!--<android.support.wearable.view.WearableListView-->
+            <!--android:id="@+id/wearable_list"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent">-->
+            <!--</android.support.wearable.view.WearableListView>-->
+
+<!--** 2D Picker -->
+        <android.support.wearable.view.GridViewPager
+            android:id="@+id/grid_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </android.support.wearable.view.GridViewPager>
+<!--** Dot pages in the viewpager -->
+        <android.support.wearable.view.DotsPageIndicator
+            android:id="@+id/dot_pager_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"/>
+
+<!--** Dismiss OverlayView Goes Here -->
+        <!--<android.support.wearable.view.DismissOverlayView-->
+            <!--android:id="@+id/dismiss_overlay_button"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"/>-->
+
+<!--** TextView in the wear -->
+        <!--<TextView-->
+        <!--android:id="@+id/text"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="using box insetlayout in wear layout"-->
+        <!--android:textColor="@android:color/holo_blue_bright" />-->
+
+    </FrameLayout>
+
+<!--** To card farm using CardFrame-->
+    <!--<android.support.wearable.view.CardScrollView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--app:layout_box="bottom">-->
+        <!--<android.support.wearable.view.CardFrame-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="bottom">-->
+            <!--<LinearLayout-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:orientation="horizontal"-->
+                <!--android:weightSum="1.5">-->
+                <!--<LinearLayout-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:orientation="vertical"-->
+                    <!--android:layout_weight="1">-->
+                <!--<TextView-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:text="@string/my_title"-->
+                    <!--android:textColor="@android:color/black"/>-->
+                <!--<TextView-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:text="@string/my_description"-->
+                    <!--android:textColor="@android:color/black"/>-->
+                <!--</LinearLayout>-->
+                <!--<android.support.wearable.view.CircledImageView-->
+                    <!--android:layout_width="20dp"-->
+                    <!--android:layout_height="20dp"-->
+                    <!--android:layout_weight="0.5"-->
+                    <!--android:layout_gravity="center_vertical"-->
+                    <!--android:src="@drawable/wear_background"-->
+                    <!--app:circle_radius="10dp"/>-->
+            <!--</LinearLayout>-->
+        <!--</android.support.wearable.view.CardFrame>-->
+    <!--</android.support.wearable.view.CardScrollView>-->
+
+</android.support.wearable.view.BoxInsetLayout>

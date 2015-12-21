@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">WearNotification</string>
+    <string name="hello_round">Hello Round World!</string>
+    <string name="hello_square">Hello Square World!</string>
+    <string name="my_title">my title goes here</string>
+    <string name="my_description">my description goes here</string>
+</resources>
