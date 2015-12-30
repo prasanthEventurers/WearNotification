@@ -47,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private  String voiceTranscription ="voice_transcription";
     private String bestNode = null;
     private String strMessage = null;
+    private GoogleApiClient mGoogleApiClient;
 
-    private   GoogleApiClient mGoogleApiClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,12 +65,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
+    protected void onStop(){
         super.onStop();
         mGoogleApiClient.disconnect();
     }
 
-    private void SetUpDefault() {
+    private void SetUpDefault(){
 ///GoogleApiClient connection
         mGoogleApiClient = new GoogleApiClient.Builder(MainActivity.this)
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
@@ -82,10 +82,10 @@ public class MainActivity extends AppCompatActivity {
                         Wearable.DataApi.addListener(mGoogleApiClient, new DataApi.DataListener() {
                             @Override
                             public void onDataChanged(DataEventBuffer dataEventBuffer) {
-                                for (DataEvent event:dataEventBuffer)
-                                {
-
-                                }
+//                                for (DataEvent event:dataEventBuffer)
+//                                {
+//
+//                                }
                             }
                         });
                     }
@@ -105,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .addApi(Wearable.API)
                 .build();
-
     }
 
     private void SetUpEvents() {
@@ -123,7 +122,18 @@ public class MainActivity extends AppCompatActivity {
                         Asset asset = CreateAssertForBitmap(bitmap);
                         mDataMap.putAsset("asset",asset);
                         Log.e("MobileDataMap: ", "" + mDataMap);
-                        new SendToDataLayerThread(wearablePath, mDataMap).start();
+                        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(wearablePath);
+                        putDataMapRequest.getDataMap().putAll(mDataMap);
+                        Log.e("DataMap: ",""+mDataMap);
+                        PutDataRequest mPutDataRequest = putDataMapRequest.asPutDataRequest();
+//            DataApi.DataItemResult dataItemResult =
+                        Wearable.DataApi.putDataItem(mGoogleApiClient,mPutDataRequest).setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                            @Override
+                            public void onResult(DataApi.DataItemResult dataItemResult) {
+                                Log.e("RESULT", "Success");
+                            }
+                        });
+//                        new SendToDataLayerThread(wearablePath, mDataMap).start();
                     }
                 }
             }
@@ -133,20 +143,22 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!editMessage.getText().toString().isEmpty())
                 {
-                    Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).setResultCallback(new ResultCallback<NodeApi.GetConnectedNodesResult>() {
+                    Wearable.NodeApi.getConnectedNodes(mGoogleApiClient)
+                            .setResultCallback(new ResultCallback<NodeApi.GetConnectedNodesResult>() {
                         @Override
                         public void onResult(NodeApi.GetConnectedNodesResult getConnectedNodesResult) {
-                            for (com.google.android.gms.wearable.Node node:getConnectedNodesResult.getNodes())
+                            for(com.google.android.gms.wearable.Node node:getConnectedNodesResult.getNodes())
                             {
-                                if (node.isNearby())
+                                if(node.isNearby())
                                 {
                                     Log.e("near_node: ",node.getId());
                                     bestNode = node.getId();
 //                                    String message="hi from handheld";
-                                        strMessage = editMessage.getText().toString();
+                                    strMessage = editMessage.getText().toString();
                                     if (bestNode!=null)
                                     {
-                                        Wearable.MessageApi.sendMessage(mGoogleApiClient,bestNode,voiceTranscription,strMessage.getBytes()).setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
+                                        Wearable.MessageApi.sendMessage(mGoogleApiClient,bestNode,voiceTranscription,strMessage.getBytes())
+                                                .setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
                                             @Override
                                             public void onResult(MessageApi.SendMessageResult sendMessageResult) {
                                                 Log.e("ResultCallBack: ",sendMessageResult.getStatus().toString());
@@ -277,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
 //        notificationManagerCompat.notify(3,notificationBuilder3.build());
     }
 
-//Thread to Send the DataItem
+    //Thread to Send the DataItem
     public class SendToDataLayerThread extends Thread{
         String path;
         DataMap mDataMap;
@@ -294,26 +306,33 @@ public class MainActivity extends AppCompatActivity {
             putDataMapRequest.getDataMap().putAll(mDataMap);
             Log.e("DataMap: ",""+mDataMap);
             PutDataRequest mPutDataRequest = putDataMapRequest.asPutDataRequest();
-            DataApi.DataItemResult dataItemResult = Wearable.DataApi.putDataItem(mGoogleApiClient,mPutDataRequest).await();
-            if (dataItemResult.getStatus().isSuccess()){
-                Log.e("RESULT","Success");
-            }
-            else {
-                Log.e("RESULT","failed");
-            }
+//            DataApi.DataItemResult dataItemResult =
+                    Wearable.DataApi.putDataItem(mGoogleApiClient,mPutDataRequest).setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+                        @Override
+                        public void onResult(DataApi.DataItemResult dataItemResult) {
+                            Log.e("RESULT","Success");
+                        }
+                    });
+//                            .await();
+//            if (dataItemResult.getStatus().isSuccess()){
+//                Log.e("RESULT","Success");
+//            }
+//            else {
+//                Log.e("RESULT","failed");
+//            }
         }
     }
 
-//Asserts Creation
+    //Asserts Creation
     public static Asset CreateAssertForBitmap(Bitmap bitmap)
     {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream);
+        bitmap.compress(Bitmap.CompressFormat.PNG,0,byteArrayOutputStream);
         return Asset.createFromBytes(byteArrayOutputStream.toByteArray());
     }
 
     public void  checkVoiceTranscription(){
-       Wearable.CapabilityApi.getCapability(mGoogleApiClient,voiceTranscription,CapabilityApi.FILTER_REACHABLE)
+        Wearable.CapabilityApi.getCapability(mGoogleApiClient,voiceTranscription,CapabilityApi.FILTER_REACHABLE)
                 .setResultCallback(new ResultCallback<CapabilityApi.GetCapabilityResult>() {
                     @Override
                     public void onResult(CapabilityApi.GetCapabilityResult getCapabilityResult) {
@@ -324,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
         CapabilityApi.CapabilityListener capabilityListener = new CapabilityApi.CapabilityListener() {
             @Override
             public void onCapabilityChanged(CapabilityInfo capabilityInfo) {
-                    Set<com.google.android.gms.wearable.Node> nodes=capabilityInfo.getNodes();
+                Set<com.google.android.gms.wearable.Node> nodes=capabilityInfo.getNodes();
                 for (com.google.android.gms.wearable.Node node:nodes)
                 {
                     if (node.isNearby())
@@ -335,7 +354,5 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         Wearable.CapabilityApi.addCapabilityListener(mGoogleApiClient, capabilityListener, voiceTranscription);
-
-
     }
 }

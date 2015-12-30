@@ -2,10 +2,14 @@ package com.example.admin.wearnotification;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,6 +17,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.ErrorDialogFragment;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
@@ -22,6 +27,9 @@ import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 /**
  * Created by Admin on 12/15/2015.
@@ -36,6 +44,7 @@ public class DisplayActivity extends WearableActivity implements DataApi.DataLis
     private TextView mTextView,mTitleText;
     private  String val="no value changes";
     private  String voiceTranscription ="voice_transcription";
+    private FrameLayout mFrameLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +78,7 @@ public class DisplayActivity extends WearableActivity implements DataApi.DataLis
 
         mTextView = (TextView)findViewById(R.id.change_txt);
         mTitleText = (TextView)findViewById(R.id.title_text);
+        mFrameLayout = (FrameLayout)findViewById(R.id.display_framelayout);
 
 //**Google Api Client
 //        mGoogleApiClient = new GoogleApiClient.Builder(DisplayActivity.this)
@@ -113,22 +123,30 @@ public class DisplayActivity extends WearableActivity implements DataApi.DataLis
     }
 
     private void setUpDefaults() {
-//        mTextView.setText(val);
+//      mTextView.setText(val);
         if (getIntent().hasExtra("data"))
         {
-            if (getIntent().hasExtra("change"))
-            {
-                mTitleText.setText("A change is made");
-                updateText(getIntent().getExtras().getString("change"));
-            }
-            else {
-                val = getIntent().getExtras().getString("data");
-                Log.e("Value Intent: ", val);
-                mTitleText.setText("message Received !!");
-                mTextView.setText(val);
-            }
+            val = getIntent().getExtras().getString("data");
+            Log.e("Value Intent: ", val);
+            mTitleText.setText("message Received !!");
+            mTextView.setText(val);
+            getIntent().removeExtra("data");
         }
-
+        if (getIntent().hasExtra("change"))
+        {
+            mTitleText.setText("A change is made");
+            updateText(getIntent().getExtras().getString("change"));
+            getIntent().removeExtra("change");
+        }
+        if (getIntent().hasExtra("bitmap"))
+        {
+            byte[] bytes = getIntent().getByteArrayExtra("bitmap");
+            Bitmap bitmap=BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+//          Bitmap bitmap =getIntent().getParcelableExtra("bitmap");
+            BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(),bitmap);
+            mFrameLayout.setBackground(bitmapDrawable);
+            getIntent().removeExtra("bitmap");
+        }
     }
 
     private void setUpEvents() {
@@ -144,7 +162,6 @@ public class DisplayActivity extends WearableActivity implements DataApi.DataLis
 
 //        mTextView = (TextView)findViewById(R.id.change_txt);
 //        Log.e("upate-value: ", "" + values);
-//
 //        Log.e("update-val: ",val);
 //        mTextView.setText(val);
     }
@@ -162,8 +179,20 @@ public class DisplayActivity extends WearableActivity implements DataApi.DataLis
                     mDataMap = DataMapItem.fromDataItem(event.getDataItem()).getDataMap();
                     Log.e("DataMap: ", "" + mDataMap);
                     String strSecondData = mDataMap.getString("mySecondData");
+                    Asset asset=mDataMap.getAsset("asset");
+                    InputStream inputStream = Wearable.DataApi.getFdForAsset(mGoogleApiClient,asset).await().getInputStream();
+                    if (inputStream==null)
+                    {
+                        Log.e("asset:","not found");
+                    }
+                    Log.e("asset:", "" + inputStream);
+                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                    ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                    byte[] bytes = byteArrayOutputStream.toByteArray();
                     Log.e("strSecondData: ", strSecondData);
                     getIntent().putExtra("change", strSecondData);
+                    getIntent().putExtra("bitmap",bytes);
                     finish();
                     startActivity(getIntent());
                     Toast.makeText(DisplayActivity.this,"Data Changed",Toast.LENGTH_SHORT).show();
@@ -186,7 +215,6 @@ public class DisplayActivity extends WearableActivity implements DataApi.DataLis
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-
         Log.e("connectionResult: ", " " + connectionResult);
         Log.e("connect: ", "Failed " + connectionResult);
         Dialog dialog=GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), DisplayActivity.this,0);
@@ -196,13 +224,11 @@ public class DisplayActivity extends WearableActivity implements DataApi.DataLis
 //        ErrorDialogFragment errorDialogFragment = new ErrorDialogFragment();
 //        errorDialogFragment.setArguments(bundle);
 //        errorDialogFragment.show(getFragmentManager(),"ERROR DAILOG");
-
     }
 
     private void updateText(String text){
         Log.e("Came: ", "updateText");
         mTextView.setText(text);
-
     }
 
     @Override
